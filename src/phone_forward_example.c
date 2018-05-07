@@ -5,6 +5,7 @@
 
 #define MAX_LEN 23
 
+
 int main() {
   char num1[MAX_LEN + 1], num2[MAX_LEN + 1];
   struct PhoneForward *pf;
@@ -21,10 +22,15 @@ int main() {
   assert(result);
   (void)result;
 
+
+
   pnum = phfwdGet(pf, "1234");
-  printf("%s\n", phnumGet(pnum, 0)); // Wypisuje 94.
+  pisz(phnumGet(pnum, 0));
+  /** printf("%s\n", phnumGet(pnum, 0)); // Wypisuje 94. */
   phnumDelete(pnum);
 
+  phfwdDelete(pf);
+  return 0;
   pnum = phfwdGet(pf, "12");
   printf("%s\n", phnumGet(pnum, 0)); // Wypisuje 12.
   phnumDelete(pnum);
@@ -85,8 +91,9 @@ int main() {
   // 5678
   while ((num = phnumGet(pnum, idx++)) != NULL)
     printf("%s\n", num);
+  printf("%d\n",pnum->size);
   phnumDelete(pnum);
-
+  
   result = phfwdAdd(pf, "A", "1");
   assert(!result);
   (void)result;
@@ -97,6 +104,7 @@ int main() {
 
   phfwdRemove(pf, "");
   phfwdRemove(pf, NULL);
+
 
   pnum = phfwdGet(pf, "A");
   assert(phnumGet(pnum, 0) == NULL);
@@ -112,6 +120,5 @@ int main() {
   phnumDelete(pnum);
   pf = NULL;
   phfwdDelete(pf);
-
   return 0;
 }

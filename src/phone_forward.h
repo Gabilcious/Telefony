@@ -12,16 +12,23 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include "tree.h"
 
 /**
  * Struktura przechowująca przekierowania numerów telefonów.
  */
-struct PhoneForward;
+struct PhoneForward{
+    Tree *forward;      ///< drzewo trie reprezentujące przekierowania
+    Tree *reverse;      ///< drzewo trie reprezentujące odwrócone przekierowania
+} PhoneForward;
 
 /**
  * Struktura przechowująca ciąg numerów telefonów.
  */
-struct PhoneNumbers;
+struct PhoneNumbers{
+    char **list;        ///< posortowana tablica numerów telefonów
+    int size;           ///< liczba numerów telefonów w strukturze
+} PhoneNumbers;
 
 /** @brief Tworzy nową strukturę.
  * Tworzy nową strukturę niezawierającą żadnych przekierowań.
@@ -96,7 +103,11 @@ struct PhoneNumbers const * phfwdReverse(struct PhoneForward *pf, char const *nu
  * @param[in] pnum – wskaźnik na usuwaną strukturę.
  */
 static inline void phnumDelete(struct PhoneNumbers const *pnum) {
-  free((void*)pnum);
+    if(pnum == NULL) return;
+    int i;
+    for(i = 0; i < pnum->size; i++) free(pnum->list[i]);
+    free(pnum->list);
+    free((void*)pnum);
 }
 
 /** @brief Udostępnia numer.

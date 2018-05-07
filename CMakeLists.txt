@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(wielomiany C)
+project(Telefony C)
 
 if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default to Release")
@@ -21,6 +21,8 @@ set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 
 # Wskazujemy pliki źródłowe.
 set(SOURCE_FILES
+    src/tree.c
+    src/tree.h
     src/phone_forward.c
     src/phone_forward.h
     src/phone_forward_example.c)
