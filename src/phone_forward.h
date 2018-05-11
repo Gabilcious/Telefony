@@ -12,22 +12,23 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include "tree.h"
+#include "forwardTree.h"
+#include "reverseTree.h"
 
 /**
  * Struktura przechowująca przekierowania numerów telefonów.
  */
 struct PhoneForward{
-    Tree *forward;      ///< drzewo trie reprezentujące przekierowania
-    Tree *reverse;      ///< drzewo trie reprezentujące odwrócone przekierowania
+    ForwardTree *forward;   ///< drzewo trie reprezentujące przekierowania
+    ReverseTree *reverse;   ///< drzewo trie reprezentujące odwrócone przekierowania
 } PhoneForward;
 
 /**
  * Struktura przechowująca ciąg numerów telefonów.
  */
 struct PhoneNumbers{
-    char **list;        ///< posortowana tablica numerów telefonów
-    int size;           ///< liczba numerów telefonów w strukturze
+    char **list;            ///< posortowana tablica numerów telefonów
+    int size;               ///< liczba numerów telefonów w strukturze
 } PhoneNumbers;
 
 /** @brief Tworzy nową strukturę.

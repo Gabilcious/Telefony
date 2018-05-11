@@ -7,15 +7,36 @@
 
 
 int main() {
+  setbuf(stdout, NULL);
   char num1[MAX_LEN + 1], num2[MAX_LEN + 1];
   struct PhoneForward *pf;
   struct PhoneNumbers const *pnum;
   char const *num;
   size_t idx;
   bool result;
-
   pf = phfwdNew();
+  
+  phfwdAdd(pf,"1","155");
+  pnum = phfwdReverse(pf, "155");
+  idx = 0;
+  while ((num = phnumGet(pnum, idx++)) != NULL)
+    printf("%s\n", num);
+  phnumDelete(pnum);
 
+
+  phfwdAdd(pf,"2","155");
+  pnum = phfwdReverse(pf, "155");
+  idx = 0;
+  while ((num = phnumGet(pnum, idx++)) != NULL)
+    printf("%s\n", num);
+  phnumDelete(pnum);
+  
+
+
+  
+  
+  
+  
   strcpy(num1, "123");
   strcpy(num2, "9");
   result = phfwdAdd(pf, num1, num2);
@@ -25,12 +46,9 @@ int main() {
 
 
   pnum = phfwdGet(pf, "1234");
-  pisz(phnumGet(pnum, 0));
-  /** printf("%s\n", phnumGet(pnum, 0)); // Wypisuje 94. */
+  printf("%s\n", phnumGet(pnum, 0)); // Wypisuje 94.
   phnumDelete(pnum);
 
-  phfwdDelete(pf);
-  return 0;
   pnum = phfwdGet(pf, "12");
   printf("%s\n", phnumGet(pnum, 0)); // Wypisuje 12.
   phnumDelete(pnum);
@@ -122,3 +140,4 @@ int main() {
   phfwdDelete(pf);
   return 0;
 }
+

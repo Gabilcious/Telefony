@@ -4,22 +4,26 @@
 #include <string.h>
 #include "phone_forward.h"
 
+//może copy powinno być w głębszych funkcjach
+
 struct PhoneForward * phfwdNew(void) {
     struct PhoneForward *element;
-    if((element = (struct PhoneForward *)malloc(sizeof(PhoneForward))) == NULL
-         || (element->forward = newNode(NULL, -1)) == NULL
-         || (element->reverse = newNode(NULL, -1)) == NULL) return NULL;
+    element = (struct PhoneForward *)malloc(sizeof(PhoneForward));
+    element->forward = forNewNode(NULL, -1, EMPTY);
+    element->reverse = revNewNode(NULL, -1, EMPTY);
+    if (element == NULL || element->forward == NULL || element->reverse == NULL)
+        return NULL;
     return element;
 }
 
 void phfwdDelete(struct PhoneForward *pf) {
     if(pf == NULL) return;
-    removeAllNodes(pf->forward);
-    removeAllNodes(pf->reverse);
+    forRemoveAllNodes(pf->forward);
+    revRemoveAllNodes(pf->reverse);
     free(pf);
 }
 
-inline bool isNumber(char const *ch) {
+static inline bool isNumber(char const *ch) {
     int i = 0;
     while(ch[i] != 0) if (!isdigit(ch[i++])) return false;
     return (strlen(ch)>0);
@@ -27,84 +31,96 @@ inline bool isNumber(char const *ch) {
 
 bool phfwdAdd(struct PhoneForward *pf, char const *num1, char const *num2) {
     if(!isNumber(num1) || !isNumber(num2) || !strcmp(num1,num2)) return false;
-    Tree *forward = pf->forward;
-    Tree *reverse = pf->reverse;
-    int i = 0;
     
+    ForwardTree *forward = pf->forward;
+    ReverseTree *reverse = pf->reverse;
+    
+    // Tworzę ścieżkę do wierzchołków, które muszę dodać
+    int i = 0;
     while(num1[i] != 0) {
         int x = (int)num1[i] - 48;
-        if(forward->next[x] == NULL)
-            if((forward->next[x] = newNode(forward, x)) == NULL) {
-                clearFromNode(forward);
+        if(forward->next[x] == NULL){
+            char *val = malloc(i + 2);
+            strncpy(val, num1, i + 1);
+            val[i+1] = 0;
+            forward->next[x] = forNewNode(forward,x,val);
+            if(forward->next[x]  == NULL) {
+                forClearFromNode(forward);
+                free(val);
                 return false;
             }
+            free(val);
+        }
         forward = forward->next[x];
         i++;
     }
     i = 0;
     while(num2[i] != 0) {
         int x = (int)num2[i] - 48;
-        if(reverse->next[x] == NULL)
-            if((reverse->next[x] = newNode(reverse, x)) == NULL) {
-                clearFromNode(forward);
-                clearFromNode(reverse);
+        char *val = malloc(i + 2);
+        strncpy(val, num2, i + 1);
+        val[i+1] = 0;
+        if(reverse->next[x] == NULL) {
+            if((reverse->next[x] = revNewNode(reverse, x, val)) == NULL) {
+                forClearFromNode(forward);
+                revClearFromNode(reverse);
+                free(val);
                 return false;
             }
+        }
         reverse = reverse->next[x];
+        free(val);
         i++;
     }
-    char *numm2;
-    numm2 = malloc(strlen(num2)*sizeof(char)+1);
-    char *numm1;
-    numm1 = malloc(strlen(num1)*sizeof(char)+1);
-    strcpy(numm2,num2);
-    strcpy(numm1,num1);
+    if(strcmp(forward->id,EMPTY)) {
+        revRemoveConcreteNode(reverse, forward->id, forward->val);
+    }
     free(forward->id);
-    free(reverse->id);
-    forward->id = numm2;
-    reverse->id = numm1;
+    forward->id = malloc(strlen(num2)+1);
+    strcpy(forward->id,num2);
+    add(reverse->id, num1); 
+    reverse->size++;
     return true;
 }
 
-void recPhfwdRemove(Tree *forward, Tree *reverse) {
+static void recPhfwdRemove(ForwardTree *forward, ReverseTree *reverse) {
     int i;
     for(i = 0; i < SIZE; i++)
-        if(forward->next[i] != NULL) recPhfwdRemove(forward->next[i], reverse);
-    removeConcreteNode(reverse, forward->id);
-    removeNode(forward);
+        if(forward->next[i] != NULL)
+            recPhfwdRemove(forward->next[i], reverse);
+    if (strcmp(forward->id,EMPTY)) {
+        revRemoveConcreteNode(reverse, forward->id, forward->val);
+    }
+    forRemoveNode(forward);
 }
 
 void phfwdRemove(struct PhoneForward *pf, char const *num) {
     if(num == NULL || strlen(num)==0) return;
-    Tree *forward = pf->forward;
+    
+    ForwardTree *forward = pf->forward;
     int i = 0;
     while(num[i] != 0) {
         int x = (int)num[i] - 48;
         if(forward->next[x] == NULL) return;
         forward = forward->next[x];
         i++;
-        
     }
-    Tree *prev = forward->prev;
+    ForwardTree *prev = forward->prev;
     recPhfwdRemove(forward, pf->reverse);
-    clearFromNode(prev);
+    forClearFromNode(prev);
 }
 
-//DO POPRAWKI 2xCOPY
-char * connect(char *first, char const *second, int secIndex){
+static char * connect(char *first, char const *second, int secIndex){
     char *res;
     int firstLen = (int)strlen(first);
     int size = firstLen + (int)strlen(second) - secIndex;
-    res = (char *)malloc(size*sizeof(char)+1);
-    int i;
-    for(i = 0; i < size; i++) {
-        if (i < firstLen) res[i] = first[i];
-        else res[i] = second[secIndex++];
-    }
+    res = (char *)malloc(size*sizeof(char) + 1);
+    strcpy(res, first);
+    strcpy(res + firstLen, second + secIndex);
     return res;
 }
 
-struct PhoneNumbers * phnumNew(int size) {
+static struct PhoneNumbers * phnumNew(int size) {
     struct PhoneNumbers *element;
     if((element = (struct PhoneNumbers *)malloc(sizeof(PhoneNumbers))) == NULL) return NULL;
     if((element->list = (char **)malloc(size*sizeof(char *))) == NULL) {
@@ -121,8 +137,10 @@ struct PhoneNumbers * phnumNew(int size) {
 struct PhoneNumbers const * phfwdGet(struct PhoneForward *pf, char const *num) {
     if(!isNumber(num)) return phnumNew(0);
     struct PhoneNumbers *res;
-    if((res = phnumNew(1)) == NULL) return NULL;
-    Tree *forward = pf->forward;
+    if((res = phnumNew(1)) == NULL)
+        return NULL;
+
+    ForwardTree *forward = pf->forward;
     int i = 0;
     while(num[i] != 0) {
         int x = (int)num[i] - 48;
@@ -141,14 +159,12 @@ struct PhoneNumbers const * phfwdGet(struct PhoneForward *pf, char const *num) {
         forward = forward->prev;
         i--;
     }
-    char *c;
-    c = (char *)malloc(strlen(num)*sizeof(char)+1);
-    strcpy(c,num);
-    res->list[0] = c;
+    res->list[0] = (char *)malloc(strlen(num)*sizeof(char)+1);
+    strcpy(res->list[0],num);
     return res;
 }
 
-bool isSmaller(char *L, char *R) {
+static bool isSmaller(char *L, char *R) {
     if(L == NULL) return false;
     if(R == NULL) return true;
     int sizeL = strlen(L);
@@ -162,7 +178,7 @@ bool isSmaller(char *L, char *R) {
     return false;
 }
 
-void Merge(char **A, char **L, int leftCount, char **R, int rightCount) {
+static void Merge(char **A, char **L, int leftCount, char **R, int rightCount) {
 	int	i = 0, j = 0, k =0;
 	while(i<leftCount && j< rightCount) {
 		if(isSmaller(L[i],R[j])) A[k++] = L[i++];
@@ -177,7 +193,7 @@ void Merge(char **A, char **L, int leftCount, char **R, int rightCount) {
     while(k < i + j) A[k++] = NULL;
 }
  
-void MergeSort(char **A, int n) {
+static void MergeSort(char **A, int n) {
 	int mid, i;
     char **L, **R;
 	if(n < 2) return; 
@@ -189,37 +205,40 @@ void MergeSort(char **A, int n) {
 	MergeSort(L,mid);
 	MergeSort(R,n-mid);
 	Merge(A,L,mid,R,n-mid);
-        /////czy muszę zwalniać pojedyncze elementy tablicy forem? nie mallocowałam ich
     free(L);
     free(R);
 }
 
 struct PhoneNumbers const * phfwdReverse(struct PhoneForward *pf, char const *num) {
     if(!isNumber(num)) return phnumNew(0);
+    
     int size = 1;
-    Tree *reverse = pf->reverse;
+    ReverseTree *reverse = pf->reverse;
     int i = 0;
     while(num[i] != 0) {
         int x = (int)num[i] - 48;
         if(reverse->next[x] == NULL) break;
         reverse = reverse->next[x];
-        if (strcmp(reverse->id,EMPTY)) {
-            size++;
-        }
+        size = size + reverse->size;
         i++;
     }
+
     struct PhoneNumbers *res;
     if((res = phnumNew(size)) == NULL) return NULL;
     char *c;
     c = (char *)malloc(strlen(num)*sizeof(char)+1);
     strcpy(c,num);
     res->list[--size] = c;
+
     while(reverse != pf->reverse) {
-        if(strcmp(reverse->id,EMPTY)) {
-            if((res->list[--size] = connect(reverse->id, num, i)) == NULL) {
+        List *current = reverse->id;
+        while(current->next != NULL) {
+            res->list[--size] = connect(current->next->id, num, i);
+            if(res->list[size] == NULL) {
                 phnumDelete(res);
                 return NULL;
             }
+            current = current->next;
         }
         reverse = reverse->prev;
         i--;
@@ -228,15 +247,14 @@ struct PhoneNumbers const * phfwdReverse(struct PhoneForward *pf, char const *nu
     return res;
 }
 
-void pisz(char *c) {
-    int i = 0;
-    while(c[i]!=0) printf("%c",c[i++]);
-    printf("\n");
-}
+//do usuniecia
+/** static void pisz(char *c, int size) { */
+/**     int i = 0; */
+/**     printf("size=%d\n", size); */
+/**     while(size--) printf("%c\n",c[i++]); */
+/** } */
 
 char const * phnumGet(struct PhoneNumbers const *pnum, size_t idx) {
-    /** if(pnum == NULL || (int)idx >= pnum->size) return NULL; */
-    printf("%s\n",pnum->list[idx]);
-    /** return pnum->list[idx]; */
-    return "123";
+    if(pnum == NULL || (int)idx >= pnum->size) return NULL;
+    return pnum->list[idx];
 }
