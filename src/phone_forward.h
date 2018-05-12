@@ -12,22 +12,23 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include "tree.h"
+#include "forwardTree.h"
+#include "reverseTree.h"
 
 /**
  * Struktura przechowująca przekierowania numerów telefonów.
  */
 struct PhoneForward{
-    Tree *forward;      ///< drzewo trie reprezentujące przekierowania
-    Tree *reverse;      ///< drzewo trie reprezentujące odwrócone przekierowania
+    ForwardTree *forward;   ///< drzewo trie reprezentujące przekierowania
+    ReverseTree *reverse;   ///< drzewo trie reprezentujące odwrócone przekierowania
 } PhoneForward;
 
 /**
  * Struktura przechowująca ciąg numerów telefonów.
  */
 struct PhoneNumbers{
-    char **list;        ///< posortowana tablica numerów telefonów
-    int size;           ///< liczba numerów telefonów w strukturze
+    char **list;            ///< posortowana tablica numerów telefonów
+    int size;               ///< liczba numerów telefonów w strukturze
 } PhoneNumbers;
 
 /** @brief Tworzy nową strukturę.
@@ -35,7 +36,7 @@ struct PhoneNumbers{
  * @return Wskaźnik na utworzoną strukturę lub NULL, gdy nie udało się
  *         zaalokować pamięci.
  */
-struct PhoneForward * phfwdNew(void);
+struct PhoneForward *phfwdNew(void);
 
 /** @brief Usuwa strukturę.
  * Usuwa strukturę wskazywaną przez @p pf. Nic nie robi, jeśli wskaźnik ten ma
@@ -82,7 +83,7 @@ void phfwdRemove(struct PhoneForward *pf, char const *num);
  * @return Wskaźnik na strukturę przechowującą ciąg numerów lub NULL, gdy nie
  *         udało się zaalokować pamięci.
  */
-struct PhoneNumbers const * phfwdGet(struct PhoneForward *pf, char const *num);
+struct PhoneNumbers const *phfwdGet(struct PhoneForward *pf, char const *num);
 
 /** @brief Wyznacza przekierowania na dany numer.
  * Wyznacza wszystkie przekierowania na podany numer. Wynikowy ciąg zawiera też
@@ -95,7 +96,7 @@ struct PhoneNumbers const * phfwdGet(struct PhoneForward *pf, char const *num);
  * @return Wskaźnik na strukturę przechowującą ciąg numerów lub NULL, gdy nie
  *         udało się zaalokować pamięci.
  */
-struct PhoneNumbers const * phfwdReverse(struct PhoneForward *pf, char const *num);
+struct PhoneNumbers const *phfwdReverse(struct PhoneForward *pf, char const *num);
 
 /** @brief Usuwa strukturę.
  * Usuwa strukturę wskazywaną przez @p pnum. Nic nie robi, jeśli wskaźnik ten ma
@@ -118,6 +119,6 @@ static inline void phnumDelete(struct PhoneNumbers const *pnum) {
  * @return Wskaźnik na napis. Wartość NULL, jeśli wskaźnik @p pnum ma wartość
  *         NULL lub indeks ma za dużą wartość.
  */
-char const * phnumGet(struct PhoneNumbers const *pnum, size_t idx);
+char const *phnumGet(struct PhoneNumbers const *pnum, size_t idx);
 
 #endif /* __PHONE_FORWARD_H__ */
