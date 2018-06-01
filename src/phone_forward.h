@@ -12,8 +12,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include "forwardTree.h"
-#include "reverseTree.h"
+#include "forward_tree.h"
+#include "reverse_tree.h"
 
 /**
  * Struktura przechowująca przekierowania numerów telefonów.

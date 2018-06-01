@@ -6,8 +6,8 @@
  * @date 09.05.2018
  */
 
-#ifndef __forwardTree_h__
-#define __forwardTree_h__
+#ifndef __forward_tree_h__
+#define __forward_tree_h__
 
 #ifndef __empty__
 #define __empty__

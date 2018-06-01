@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "reverseTree.h"
+#include "reverse_tree.h"
 
 ReverseTree *revNewNode(ReverseTree *prev, int lastDigTo, const char *to) {
 	ReverseTree *element;

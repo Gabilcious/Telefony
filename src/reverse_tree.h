@@ -6,8 +6,8 @@
  * @date 09.05.2018
  */
 
-#ifndef __reverseTree_h__
-#define __reverseTree_h__
+#ifndef __reverse_tree_h__
+#define __reverse_tree_h__
 #include "list.h"
 
 

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "forwardTree.h"
+#include "forward_tree.h"
 
 ForwardTree *forNewNode(ForwardTree *prev, int lastDigFrom, const char *from) {
     ForwardTree *element;
