@@ -10,6 +10,19 @@ char *names[BASESSIZE];
 int charNumber = 0;
 bool isUngetted = false;
 char ungetted;
+char *buff = "";
+char *number = "";
+char *number1 = "";
+char *number2 = "";
+char *id = "";
+char *name = "";
+
+void free2(char *c) {
+	if (strcmp(c,"")) {
+		free(c);
+		c = "";
+	}
+}
 
 // Własna funkcja, zwracająca znak z wejścia
 char getChar() {
@@ -67,6 +80,7 @@ char *glue(char *c1, char c2) {
 	int c1len = strlen(c1);
 	char *res = (char *)malloc(c1len + 2);
 	strcpy(res,c1);
+	free2(c1);
 	res[c1len] = c2;
 	res[c1len + 1] = '\0';
 	return res;
@@ -74,10 +88,15 @@ char *glue(char *c1, char c2) {
 
 // Funkcja obsługująca wyjjście z programu i zwolnienie pamięci
 void terminate(int state, char *operator, int noLine) {
+	free2(number);
+	free2(number1);
+	free2(number2);
+	free2(id);
+	free2(name);
 	int i = 0;
 	while (i < BASESSIZE) {
 		if (bases[i] != NULL) {
-			free(names[i]);
+			free2(names[i]);
 			names[i] = "";
 			phfwdDelete(bases[i]);
 			bases[i] = NULL;
@@ -99,7 +118,7 @@ void terminate(int state, char *operator, int noLine) {
 		char *res = (char *)malloc(20);
 		res = itoa(noLine, res, 10);
 		fprintf(stderr, "%s\n", res);
-		free(res);
+		free2(res);
 	}
 	exit(state);
 }
@@ -177,22 +196,17 @@ char *getNumber() {
 	}
 	
 	char c;
-	char *res = "";
+	buff = "";
  	while ((c = getChar())) {
 		if (isdigit(c)) {
-			res = glue(res, c);
-		}
-		else if (c == '$') {
-			ungetC(c);
-			waitForComment();
-			break;
+			buff = glue(buff, c);
 		}
 		else {
 			ungetC(c);
 			break;
 		}
 	}
-	return res;
+	return buff;
 }
 
 // Funkcja zwracająca ze standardowego wejścia ciąg znaków, który jest identyfikatorem
@@ -207,15 +221,10 @@ char *getID() {
 		return "";
 	}
 
-	char *res = "";
+	buff = "";
  	while (true) {
 		if (isalpha(c) || isdigit(c)) {
-			res = glue(res, c);
-		}
-		else if (c == '$') {
-			ungetC(c);
-			waitForComment();
-			break;
+			buff = glue(buff, c);
 		}
 		else {
 			ungetC(c);
@@ -223,7 +232,7 @@ char *getID() {
 		}
 		c = getChar();
 	}
-	return res;
+	return buff;
 }
 
 
@@ -246,7 +255,8 @@ int main() {
 		// Instrukcja zaczyna się od numeru
 		if (isdigit(c)) {
 			ungetC(c);
-			char *number1 = getNumber();
+			free2(number1);
+			number1 = getNumber();
 			pass();
 			c = getChar();
 			
@@ -254,7 +264,8 @@ int main() {
 			if (c == '>') {
 				firstCommandNum = charNumber;
 				pass();
-				char *number2 = getNumber();
+				free2(number2);
+				number2 = getNumber();
 				
 				if (!strcmp(number2, "")) {
 					terminate(1, NULL, charNumber + 1);
@@ -262,7 +273,7 @@ int main() {
 
 				if (actual == -1 || !phfwdAdd(bases[actual], number1, number2)) {
 					terminate(1, ">", firstCommandNum);
-				}	
+				}
 			}
 			else if (c == '?') {
 				// Sprawdzanie przekierowań z podanego numeru
@@ -296,7 +307,13 @@ int main() {
 				terminate(1, NULL, charNumber);
 			}
 			ungetC(c);
-			char *id = getID();
+			free2(id);
+			id = getID();
+			
+			if (strcmp(id,"DEL") && strcmp(id,"NEW")) {
+				terminate(1, NULL, firstCommandNum);
+			}
+
 			pass();
 			c = getChar();
 
@@ -310,7 +327,8 @@ int main() {
 				}
 				
 				ungetC(c);
-				char *name = getID();
+				free2(name);
+				name = getID();
 				
 				// Przypadek, gdy identyfikator próbuje przyjąć nazwę zastrzeżoną
 				if (!strcmp(name,"DEL") || !strcmp(name,"NEW")) {
@@ -334,7 +352,9 @@ int main() {
 					while (i < BASESSIZE) {
 						if (!strcmp(names[i], "")) {
 							actual = i;
-							names[i] = name;
+							names[i] = malloc(strlen(name)+1);
+							// CZy jest ok to kopiowanie?
+							strcpy(names[i],name);
 							bases[i] = phfwdNew();
 							break;
 						}
@@ -347,18 +367,21 @@ int main() {
 				// Usuwanie przekierowania
 				if (isdigit(c)) {
 					ungetC(c);
-					char *number = getNumber();
+					free2(number);
+					number = getNumber();
 
 					if (actual == -1) {
 						terminate(1, "DEL", firstCommandNum);
 					}
 
 					phfwdRemove(bases[actual], number);
+					number = "";
 				}
 				// Usuwanie bazy danych
 				else if (isalpha(c)) {
 					ungetC(c);
-					char *name = getID();
+					free2(name);
+					name = getID();
 					
 					if (!strcmp(name,"NEW") || !strcmp(name, "DEL")) {
 						terminate(1, NULL, charNumber - 2);
@@ -370,7 +393,11 @@ int main() {
 						if (!strcmp(names[i], name)) {
 							phfwdDelete(bases[i]);
 							bases[i] = NULL;
-							names[i] = "";
+							/** free2(names[i]); */
+							if(strcmp(names[i],"")) {
+								free(names[i]);
+								names[i]="";
+							}
 							if (i == actual) {
 								actual = -1;
 							}
@@ -391,15 +418,12 @@ int main() {
 					terminate(1, NULL, charNumber);
 				}
 			}
-			else {
-				terminate(1, NULL, firstCommandNum);
-			}
-			
 		}
 		// Instrukcja to sprawdzanie przekierowań na podany numer
 		else if (c == '?') {
 			pass();
-			char *number = getNumber();
+			free2(number);
+			number = getNumber();
 			
 			if (!strcmp(number,"")) {
 				terminate(1, NULL, charNumber + 1);
