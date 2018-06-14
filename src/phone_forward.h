@@ -21,7 +21,7 @@
 struct PhoneForward{
     ForwardTree *forward;   ///< drzewo trie reprezentujące przekierowania
     ReverseTree *reverse;   ///< drzewo trie reprezentujące odwrócone przekierowania
-} PhoneForward;
+} PhoneForward;			    ///< wynikowa struktura
 
 /**
  * Struktura przechowująca ciąg numerów telefonów.
@@ -29,7 +29,7 @@ struct PhoneForward{
 struct PhoneNumbers{
     char **list;            ///< posortowana tablica numerów telefonów
     int size;               ///< liczba numerów telefonów w strukturze
-} PhoneNumbers;
+} PhoneNumbers;             ///< wynikowa struktura
 
 /** @brief Tworzy nową strukturę.
  * Tworzy nową strukturę niezawierającą żadnych przekierowań.
@@ -120,5 +120,17 @@ static inline void phnumDelete(struct PhoneNumbers const *pnum) {
  *         NULL lub indeks ma za dużą wartość.
  */
 char const *phnumGet(struct PhoneNumbers const *pnum, size_t idx);
+
+/** @brief Zwraca liczbę nietrywialnych numerów.
+ * Zwraca liczbę nietrywialnych numerów długości @p len, zawierających tylko
+ * cyfry, które znajdują się w napisie @p set. Jeśli wskaźnik @p pf ma wartość
+ * NULL, @p set ma wartość NULL, @p set jest pusty, @p set nie zawiera żadnej
+ * cyfry lub parametr @p len jest równy zeru, wynikiem jest zero.
+ * @param[in] pf  – wskaźnik na strukturę przechowującą przekierowania numerów;
+ * @param[in] set – zbiór znaków, z których składają się nietrywialne numery;
+ * @param[in] len  – długość szukanych numerów.
+ * @return Liczba nietrywialnych numerów
+ */
+size_t phfwdNonTrivialCount(struct PhoneForward *pf, char const *set, size_t len);
 
 #endif /* __PHONE_FORWARD_H__ */

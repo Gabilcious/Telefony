@@ -31,7 +31,7 @@ void phfwdDelete(struct PhoneForward *pf) {
 static inline bool isNumber(char const *ch) {
     int i = 0;
     while (ch[i] != 0) {
-		if (!isdigit(ch[i++])) {
+		if (!isDigit(ch[i++])) {
 			return false;
 		}
 	}
@@ -48,7 +48,7 @@ bool phfwdAdd(struct PhoneForward *pf, char const *num1, char const *num2) {
 	ForwardTree *forward = pf->forward;
     int i = 0;
     while (num1[i] != 0) {
-        int digit = (int)num1[i] - 48;
+        int digit = getDigit(num1[i]);
         if (forward->next[digit] == NULL) {
             char *from = (char *)malloc(i + 2);
             strncpy(from, num1, i + 1);
@@ -74,7 +74,7 @@ bool phfwdAdd(struct PhoneForward *pf, char const *num1, char const *num2) {
     ReverseTree *reverse = pf->reverse;
 	i = 0;
     while (num2[i] != 0) {
-		int digit = (int)num2[i] - 48;
+		int digit = getDigit(num2[i]);
         if (reverse->next[digit] == NULL) {
 			char *to = (char *)malloc(i + 2);
 			strncpy(to, num2, i + 1);
@@ -125,7 +125,7 @@ void phfwdRemove(struct PhoneForward *pf, char const *num) {
     ForwardTree *forward = pf->forward;
     int i = 0;
     while (num[i] != 0) {
-        int digit = (int)num[i] - 48;
+        int digit = getDigit(num[i]);
         if (forward->next[digit] == NULL) {
 			return;
 		}
@@ -183,7 +183,7 @@ struct PhoneNumbers const *phfwdGet(struct PhoneForward *pf, char const *num) {
     ForwardTree *forward = pf->forward;
     int i = 0;
     while (num[i] != 0) {
-        int digit = (int)num[i] - 48;
+        int digit = getDigit(num[i]);
         if (forward->next[digit] == NULL) {
 			break;
 		}
@@ -300,7 +300,7 @@ struct PhoneNumbers const *phfwdReverse(struct PhoneForward *pf, char const *num
     int forwardCount = 1;
     int i = 0;
     while (num[i] != 0) {
-        int digit = (int)num[i] - 48;
+        int digit = getDigit(num[i]);
         if (reverse->next[digit] == NULL) {
 			break;
 		}
@@ -344,4 +344,70 @@ char const *phnumGet(struct PhoneNumbers const *pnum, size_t idx) {
 		return NULL;
 	}
     return pnum->list[idx];
+}
+
+// Zwraca a^b, jeśli a dodatnie
+// W przeciwnym przypadku zwraca 0
+static size_t pot(size_t a, size_t b) {
+	if (a <= 0) {
+		return 0;
+	}
+	size_t i;
+	size_t result = 1;
+	size_t x = a;
+	for (i = 1; i <= b; i<<=1) {
+		if ((b&i) != 0) {
+			result *= x;
+		}
+		x *= x;
+	}
+	return result;
+} 
+
+static size_t recPhfwdNonTrivialCount(ReverseTree *reverse, bool *possible, size_t possibleNum, size_t len) {
+	if (strcmp(reverse->to, EMPTY) && strlen(reverse->to) > len) {
+		return 0;
+	}
+
+    size_t res = 0;
+	if (reverse->from->next != NULL) {
+		size_t revLen = strlen(reverse->to);
+		return pot(possibleNum, (len - revLen));
+	}
+
+	int i;
+    for (i = 0; i < SIZE; i++) {
+        if (possible[i] && reverse->next[i] != NULL) {
+            res += recPhfwdNonTrivialCount(reverse->next[i], possible, possibleNum, len);
+		}
+	}
+	return res;
+}
+
+size_t phfwdNonTrivialCount(struct PhoneForward *pf, char const *set, size_t len) {
+	if (pf == NULL || len == 0 || set == NULL ) {
+		return 0;
+	}
+
+	bool possible[SIZE + 1];
+	for (int i = 0; i <= SIZE; i++) {
+		possible[i] = false;
+	}
+	int i = 0;
+	while (set[i] != 0) {
+		if (isDigit(set[i])) {
+			possible[getDigit(set[i])] = true;
+		}
+		i++;
+	}
+	size_t possibleNum = 0;
+	for (int i = 0; i <= SIZE; i++) {
+		if (possible[i]) {
+			possibleNum++;
+		}
+	}
+	if(possibleNum == 0) {
+		return 0;
+	}
+	return recPhfwdNonTrivialCount(pf->reverse, possible, possibleNum, len);
 }

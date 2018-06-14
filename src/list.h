@@ -6,8 +6,8 @@
  * @date 09.05.2018
  */
 
-#ifndef __list_h__
-#define __list_h__
+#ifndef __LIST_H__
+#define __LIST_H__
 #include <stdbool.h>
 
 /**
@@ -53,12 +53,10 @@ void removeConcrete(List *head, char *id);
  */
 void clear(List *head);
 
-/** @brief Sprawdza czy jest pusta
+/** @brief Sprawdza czy jest pusta.
  * Sprawdza czy jest pusta
  * @param[in] head – głowa listy
  */
-inline bool isEmpty(List *head) {
-    return (head->next == NULL);
-}
+bool isEmpty(List *head);
 
 #endif

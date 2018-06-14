@@ -23,6 +23,10 @@ ReverseTree *revNewNode(ReverseTree *prev, int lastDigTo, const char *to) {
 	return element;
 }
 
+void revDeleteFromNode(ReverseTree *head, char *from) {
+    removeConcrete(head->from, from);
+}
+
 void revRemoveNode(ReverseTree *head) {
     if (head == NULL) {
 		return;
@@ -34,22 +38,6 @@ void revRemoveNode(ReverseTree *head) {
 		(head->prev)->next[head->lastDigTo] = NULL;
 	}
     free(head);
-}
-
-void revRemoveConcreteNode(ReverseTree *head, char *to, char *from) {
-    if (!strcmp(from, EMPTY)) {
-		return;
-	}
-    ReverseTree *it = head;
-    int i = 0;
-    while (to[i] != 0) {
-        int digit = (int)to[i] - 48;
-        it = it->next[digit];
-        i++;
-    }
-    revDeleteFromNode(it, from);
-    head->forwardCount--;
-    revClearFromNode(it);
 }
 
 void revClearFromNode(ReverseTree *head) {
@@ -68,6 +56,22 @@ void revClearFromNode(ReverseTree *head) {
     ReverseTree *prev = head->prev;
     revRemoveNode(head);
     revClearFromNode(prev);
+}
+
+void revRemoveConcreteNode(ReverseTree *head, char *to, char *from) {
+    if (!strcmp(from, EMPTY)) {
+		return;
+	}
+    ReverseTree *it = head;
+    int i = 0;
+    while (to[i] != 0) {
+        int digit = (int)to[i] - 48;
+        it = it->next[digit];
+        i++;
+    }
+    revDeleteFromNode(it, from);
+    head->forwardCount--;
+    revClearFromNode(it);
 }
 
 void revRemoveAllNodes(ReverseTree *head) {

@@ -17,8 +17,8 @@ phone_forward.h
 
 list.h
 
-forwardTree.h
+forward_tree.h
 
-reverseTree.h
+reverse_tree.h
 
 */

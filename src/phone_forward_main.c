@@ -6,17 +6,18 @@
 #define BASESSIZE 110
 
 struct PhoneForward *bases[BASESSIZE];
-char *names[BASESSIZE];
-int charNumber = 0;
-bool isUngetted = false;
-char ungetted;
-char *buff = "";
-char *number = "";
-char *number1 = "";
-char *number2 = "";
-char *id = "";
-char *name = "";
+char *names[BASESSIZE];	 // Tablica nazw wszystkich baz przekierowań
+int charNumber = 0;		 // 
+bool isUngetted = false; // Służy sprawdzeniu, czy nie mamy znaka "cofniętego" do buffora 
+char ungetted;			 // Znak, który został "cofnięty" do buffora
+char *buff = "";		 // Buffor wejściowy
+char *number = "";		 // Zmienna do przechowywania numeru przy operatorach jednoargumentowych
+char *number1 = "";		 // Zmienna do przechowywania numeru przy operatorach dwuargumentowych
+char *number2 = "";		 // Zmienna do przechowywania nuemru przy operatorach dwuargumentowych
+char *id = "";			 // Zmienna do przechowywania nazwy bazy danych
+char *name = "";		 // Zmienna do przechowywania nazwy operatora
 
+// Własna funkcja zwalniająca pamięć
 void free2(char *c) {
 	if (strcmp(c,"")) {
 		free(c);
@@ -49,7 +50,8 @@ void ungetC(char c) {
 void reverse(char *s) {
      int i, j;
      char c;
-     for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+
+     for (i = 0, j = strlen(s) - 1; i<j; i++, j--) {
          c = s[i];
          s[i] = s[j];
          s[j] = c;
@@ -73,17 +75,6 @@ char* itoa(int num, char* str, int base)
     str[i] = '\0';
     reverse(str);
     return str;
-}
-
-// Funkcja zwracająca połączenie c2 z c1
-char *glue(char *c1, char c2) {
-	int c1len = strlen(c1);
-	char *res = (char *)malloc(c1len + 2);
-	strcpy(res,c1);
-	free2(c1);
-	res[c1len] = c2;
-	res[c1len + 1] = '\0';
-	return res;
 }
 
 // Funkcja obsługująca wyjjście z programu i zwolnienie pamięci
@@ -123,8 +114,22 @@ void terminate(int state, char *operator, int noLine) {
 	exit(state);
 }
 
+// Funkcja zwracająca połączenie c2 z c1
+char *glue(char *c1, char c2) {
+	int c1len = strlen(c1);
+	char *res = (char *)malloc(c1len + 2);
+	if (res == NULL) {
+		terminate(1, "Nie udało się zamallocować pamięci", 0);
+	}
+	strcpy(res,c1);
+	free2(c1);
+	res[c1len] = c2;
+	res[c1len + 1] = '\0';
+	return res;
+}
+
 // Funkcja sprawdzająca, czy char jest białym znakiem
-inline bool isWhiteSpace(char c) {
+bool isWhiteSpace(char c) {
 	return (c == ' ' || c == '\t' || c == '\n' ||
 			c == '\v' || c == '\f' || c == '\r');
 }
@@ -198,7 +203,7 @@ char *getNumber() {
 	char c;
 	buff = "";
  	while ((c = getChar())) {
-		if (isdigit(c)) {
+		if (isDigit(c)) {
 			buff = glue(buff, c);
 		}
 		else {
@@ -223,7 +228,7 @@ char *getID() {
 
 	buff = "";
  	while (true) {
-		if (isalpha(c) || isdigit(c)) {
+		if (isalpha(c) || isDigit(c)) {
 			buff = glue(buff, c);
 		}
 		else {
@@ -253,7 +258,7 @@ int main() {
 		int firstCommandNum = charNumber;
 
 		// Instrukcja zaczyna się od numeru
-		if (isdigit(c)) {
+		if (isDigit(c)) {
 			ungetC(c);
 			free2(number1);
 			number1 = getNumber();
@@ -353,7 +358,9 @@ int main() {
 						if (!strcmp(names[i], "")) {
 							actual = i;
 							names[i] = malloc(strlen(name)+1);
-							// CZy jest ok to kopiowanie?
+							if (names[i] == NULL) {
+								terminate(1, "Nie udało się zamallocować pamięci", 0);
+							}
 							strcpy(names[i],name);
 							bases[i] = phfwdNew();
 							break;
@@ -365,7 +372,7 @@ int main() {
 			// Instrukcja zaczyna się od DEL
 			else if (!strcmp(id, "DEL")) {
 				// Usuwanie przekierowania
-				if (isdigit(c)) {
+				if (isDigit(c)) {
 					ungetC(c);
 					free2(number);
 					number = getNumber();
@@ -447,6 +454,26 @@ int main() {
 			}
 
 			phnumDelete(res);
+		}
+		else if (c == '@') {
+			pass();
+			free2(number);
+			number = getNumber();
+			
+			if (!strcmp(number,"")) {
+				terminate(1, NULL, charNumber + 1);
+			}
+
+			if (actual == -1) {
+				terminate(1, "@", firstCommandNum);
+			}
+			size_t len = 0;
+			if (strlen(number) > 12) {
+				len = strlen(number) - 12;
+			}
+			size_t res = phfwdNonTrivialCount(bases[actual], number, len); //
+
+			printf("%lu\n", res);
 		}
 		else if (c == EOF) {
 			terminate(0, NULL, -1);

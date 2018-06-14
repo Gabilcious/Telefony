@@ -6,14 +6,9 @@
  * @date 09.05.2018
  */
 
-#ifndef __forward_tree_h__
-#define __forward_tree_h__
-
-#ifndef __empty__
-#define __empty__
-static const char EMPTY[] = "empty";
-static const int SIZE = 10;
-#endif
+#ifndef __FORWARD_TREE_H__
+#define __FORWARD_TREE_H__
+#include "phone_forward_config.h"
 
 /**
  * Struktura przechowująca przekierowanie telefonów.

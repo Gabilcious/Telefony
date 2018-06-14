@@ -3,7 +3,6 @@
 #include "list.h"
 #include <string.h>
 
-//dodać ify mallocujące
 List *newList(const char *id, List *next) {
     List *element;
     element = (List *)malloc(sizeof(List));
@@ -52,3 +51,6 @@ void clear(List *head) {
     head = NULL;
 }
 
+bool isEmpty(List *head) {
+    return (head->next == NULL);
+}

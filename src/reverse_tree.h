@@ -6,16 +6,11 @@
  * @date 09.05.2018
  */
 
-#ifndef __reverse_tree_h__
-#define __reverse_tree_h__
+#ifndef __REVERSE_TREE_H__
+#define __REVERSE_TREE_H__
 #include "list.h"
+#include "phone_forward_config.h"
 
-
-#ifndef __empty__
-#define __empty__
-static const char EMPTY[] = "empty";
-static const int SIZE = 10;
-#endif
 
 /**
  * Struktura przechowująca odwrócone przekierowania telefonów.
@@ -44,9 +39,7 @@ ReverseTree * revNewNode(ReverseTree *prev, int lastDigTo, const char *to);
  * @param[in] head – wskaźnik na strukturę, w której należy dokonać zmiany.
  * @param[in] from – napis, który należy usunąć.
  */
-inline void revDeleteFromNode(ReverseTree *head, char *from) {
-    removeConcrete(head->from, from);
-}
+void revDeleteFromNode(ReverseTree *head, char *from);
 
 /** @brief Usuwa strukturę.
  * Usuwa strukturę wskazywaną przez @p head. Nic nie robi, jeśli wskaźnik ten ma

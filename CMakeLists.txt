@@ -21,6 +21,7 @@ set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 
 # Wskazujemy pliki źródłowe.
 set(SOURCE_FILES
+	src/phone_forward_config.h
     src/list.c
     src/list.h
     src/forward_tree.c
@@ -29,10 +30,11 @@ set(SOURCE_FILES
     src/reverse_tree.h
     src/phone_forward.c
     src/phone_forward.h
-    src/main.c)
+	src/phone_forward_main.c
+)
 
 # Wskazujemy plik wykonywalny.
-add_executable(main ${SOURCE_FILES})
+add_executable(phone_forward ${SOURCE_FILES})
 
 # Dodajemy obsługę Doxygena: sprawdzamy, czy jest zainstalowany i jeśli tak to:
 find_package(Doxygen)
