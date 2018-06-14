@@ -228,7 +228,7 @@ char *getID() {
 
 	buff = "";
  	while (true) {
-		if (isalpha(c) || isDigit(c)) {
+		if (isalpha(c) || isdigit(c)) {
 			buff = glue(buff, c);
 		}
 		else {
